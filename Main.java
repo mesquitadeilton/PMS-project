@@ -3,7 +3,7 @@ import java.util.*;
 
 public class Main {
     public static void clear() throws IOException, InterruptedException {
-        if (System.getProperty("os.name").contains("Windows"))
+        if(System.getProperty("os.name").contains("Windows"))
             new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
         else
             new ProcessBuilder("clear").inheritIO().start().waitFor();
@@ -20,12 +20,79 @@ public class Main {
         System.out.println("---------------------------------------------------");
     }
 
-    public static void selectProject(Project project) throws IOException, InterruptedException {
+    public static void editProject(Project project) throws IOException, InterruptedException {
+        clear();
+        int option = -1;
+        do {
+            title();
+            System.out.println("|1| Alterar status");
+            System.out.println("|2| Editar descrição");
+            System.out.println("|3| Adicionar participante");
+            System.out.println("|0| Voltar");
+            System.out.println();
+            System.out.print("> ");
+            
+            try {
+                option = Integer.parseInt(input.next());
+                switch(option) {
+                    case 1:
+                        clear();
+                        if(project.getStatus().equals("Em processo de criação")) {
+                            if(project.getDescription().isEmpty() || project.getParticipants().isEmpty())
+                                System.out.println("INFORMAÇÕES IMCOMPLETAS NO PROJETO");
+                            else 
+                                project.setStatus("Iniciado");
+                        }
+                        break;
+                    case 2:
+                        System.out.println();    
+                        System.out.println("|1| Nova descrição");
+                        System.out.println("|2| Remover descrição");
+                        System.out.println();
+                        System.out.print("> ");
+
+                        int option2 = Integer.parseInt(input.next());
+                        if(option2 == 1) {
+                            System.out.print("Nova descrição: ");
+                            String description = input.nextLine();
+                            project.setDescription(description);
+                        }
+                        else if(option2 == 2) {
+                            project.setDescription(null);
+                        }
+                        clear();
+                        break;
+                    case 3:
+                        System.out.println();
+                        System.out.print("Informe email do novo participante: ");
+                        String email = input.next();
+                        if(!email.matches("^([\\w\\-]+.)*[\\w\\-]+@([\\w\\-]+.)+([\\w\\-]{2,3})")) throw new Exception("EMAIL INVALIDO");
+                        if(!users.containsKey(email)) throw new Exception("USUÁRIO NÃO ENCONTRADO");
+
+                        project.setPaticipant(users.get(email));
+                        users.get(email).setProject(project);
+                        clear();
+                        break;
+                    default:
+                        clear();
+                }
+            } catch(NumberFormatException e) {
+                clear();
+                System.out.println("OPÇÃO INVÁLIDA");
+            } catch(Exception e) {
+                clear();
+                System.out.println(e.getMessage());
+            }
+        } while(option != 0);
+    }
+
+    public static void selectProject(Boolean author, Project project) throws IOException, InterruptedException {
         int option = -1;
         do {
             clear();
             title();
             System.out.println("Autor: "+project.getAuthor().getFullName());
+            System.out.println("Status: "+project.getStatus());
             System.out.println("Nome: "+project.getIdentification());
             System.out.println("Descrição: "+project.getDescription());
             System.out.println("Data de início: "+project.getBegin()+" | "+project.getTimeBegin());
@@ -46,11 +113,13 @@ public class Main {
             try {
                 System.out.println();
                 System.out.println();
+                if(author == true) System.out.println("|1| Editar projeto");
                 System.out.println("|0| Voltar");
                 System.out.println();
                 System.out.print("> ");
                 input.nextLine();
                 option = Integer.parseInt(input.next());
+                if(option == 1) if(author == true) editProject(project);
             } catch(NumberFormatException e) {
                 System.out.println("OPÇÃO INVÁLIDA");
             }
@@ -73,10 +142,11 @@ public class Main {
             System.out.println();
             System.out.print("> ");
             int index = Integer.parseInt(input.next());
-            selectProject(user.getProjects().get(index-1));
+            selectProject(((user.getProjects().get(index-1).getAuthor().equals(user)) ? true : false), user.getProjects().get(index-1));
         } catch(Exception e) {
             System.out.println("OPÇÃO INVÁLIDA");
         }
+        clear();
     }
 
     public static void search() throws IOException, InterruptedException {
@@ -86,7 +156,6 @@ public class Main {
             title();
             System.out.println("|1| Consultar por usuário");
             System.out.println("|2| Consultar por projeto");
-            System.out.println("|3| Consultar por atividade");
             System.out.println("|0| Voltar");
             System.out.println();
             System.out.print("> ");
@@ -112,9 +181,7 @@ public class Main {
                         String name = input.next();
                         if(!projects.containsKey(name)) throw new Exception("PROJETO NÃO ENCONTRADO");
 
-                        selectProject(projects.get(name));
-                        break;
-                    case 3:
+                        selectProject(false, projects.get(name));
                         break;
                 }
                 clear();
@@ -146,7 +213,7 @@ public class Main {
             System.out.print("Hora de término: ");
             String timeEnd = input.next();
 
-            Project p = new Project(name, description, begin, timeBegin, end, timeEnd);
+            Project p = new Project("Em processo de criação", name, description, begin, timeBegin, end, timeEnd);
             if(activity) {
                 System.out.print("Responável pela atividade(informe o email): ");
                 String email = input.next();
@@ -187,10 +254,16 @@ public class Main {
                 title();
                 switch(option) {
                     case 1:
-                        Project project = create(true, false);
-                        if(project != null) {
-                            project.setAuthor(connected);
-                            connected.setProject(project);
+                        if(connected.getOffice().equals("Professor") || connected.getOffice().equals("Pesquisador")) {
+                            Project project = create(true, false);
+                            if(project != null) {
+                                project.setAuthor(connected);
+                                connected.setProject(project);
+                            }
+                        }
+                        else {
+                            clear();
+                            System.out.println("APENAS PROFESSORES OU PESQUISADORES PODEM CRIAR PROJETOS");
                         }
                         break;
                     case 2:
@@ -254,6 +327,25 @@ public class Main {
                         if(!lastName.matches("[A-z]+")) throw new Exception("SOBRENOME NÃO PODE TER ACENTOS OU NÚMEROS");
                         lastName = lastName.substring(0,1).toUpperCase().concat(lastName.substring(1));
 
+                        String office = "";
+                        System.out.println();
+                        System.out.println("Cargo:");
+                        System.out.println();
+                        System.out.println("|1| Aluno");
+                        System.out.println("|2| Professor");
+                        System.out.println("|3| Pesquisador");
+                        System.out.println("|4| Profissional");
+                        System.out.println("|5| Técnico");
+                        System.out.println();
+                        System.out.print("> ");
+                        int option2 = Integer.parseInt(input.next());
+                        if(option2 == 1) office = "Aluno";
+                        if(option2 == 2) office = "Professor";
+                        if(option2 == 3) office = "Pesquisador";
+                        if(option2 == 4) office = "Profissional";
+                        if(option2 == 5) office = "Técnico";
+
+                        System.out.println();
                         System.out.print("Email: ");
                         email = input.next();
                         if(!email.matches("^([\\w\\-]+.)*[\\w\\-]+@([\\w\\-]+.)+([\\w\\-]{2,3})")) throw new Exception("EMAIL INVALIDO");
@@ -262,7 +354,7 @@ public class Main {
                         System.out.print("Senha: ");
                         password = input.next();
 
-                        User user = new User(name, lastName, email, password);
+                        User user = new User(name, lastName, email, office, password);
                         users.put(email, user);
                         clear();
                         break;

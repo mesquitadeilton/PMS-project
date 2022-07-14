@@ -9,10 +9,11 @@ public class User {
 
     private List<Project> projects = new ArrayList<Project>();
 
-    public User(String name, String lastName, String email, String password) {
+    public User(String name, String lastName, String email, String office, String password) {
         this.name = name;
         this.lastName = lastName;
         this.email = email;
+        this.office = office;
         this.password = password;
     }
 
@@ -22,6 +23,10 @@ public class User {
 
     public void setOffice(String office) {
         this.office = office;
+    }
+
+    public String getOffice() {
+        return office;
     }
 
     public void setProject(Project project) {

@@ -13,7 +13,8 @@ public class Project {
     private List<User> participants = new ArrayList<User>();
     private List<Project> activities = new ArrayList<Project>();
 
-    public Project(String idetification, String description, String begin, String timeBegin, String end, String timeEnd) {
+    public Project(String status, String idetification, String description, String begin, String timeBegin, String end, String timeEnd) {
+        this.status = status;
         this.identification = idetification;
         this.description = description;
         this.begin = begin;
