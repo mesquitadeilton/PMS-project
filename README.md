@@ -2,4 +2,4 @@
 
 Projeto de sistema gerenciador de projetos desenvolvido em Java para avaliação na matéria de Projeto de Software sob orientação do professor Baldoino Fonseca dos Santos Neto.
 
-Desenvolvido por Adeilton dos Santos Mesquita, aluno do Instituto de Computação na Universidade Federal de Alagoas - IC/UFAL (A. C. Simões).
+Desenvolvido por Adeilton dos Santos Mesquita, aluno do Instituto de Computação na Universidade Federal de Alagoas | IC/UFAL - Campus A. C. Simões.
